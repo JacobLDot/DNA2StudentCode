@@ -28,6 +28,9 @@ public class DNA {
             while (sequence.startsWith(STR, i + times * keyLength)) {
                 times++;
             }
+
+            // If there is a longer string of STRs in the
+            // DNA sequence then set the new longest.
             if (times > maxTimes) {
                 maxTimes = times;
             }
