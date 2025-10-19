@@ -20,7 +20,7 @@ public class DNA {
         int keyLength = STR.length();
         for (int i = 0; i <= sequence.length() - keyLength; i++) {
             int times = 0;
-            while (i + ((times + 1) * keyLength) <= sequence.length() && sequence.substring(i + (times * keyLength), i + ((times + 1) * keyLength)).equals(STR)) {
+            while (sequence.startsWith(STR, i + times * keyLength)) {
                 times++;
             }
             if (times > maxTimes) {
