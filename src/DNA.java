@@ -22,28 +22,47 @@ public class DNA {
         long strHash = hash(STR, strLength);
         long seqHash = hash(sequence.substring(0, strLength), strLength);
 
+        // Number system value of STRs
+        long baseValue = 1;
+        for (int j = 1; j < strLength; j++) {
+            baseValue = (baseValue * 255) % 54321102419L;
+        }
+
         // Tracks max number of repetitions in a chain of STRs
         int totalCount = 0;
 
         // Slides a window of length of STR through the entire DNA sequence
         for (int i = 0; i <= seqLength - strLength; i++) {
-            if (strHash == seqHash) {
-                int strCount = 0;
-                int seqStart = i;
 
-                // If it matches, then begin checking for consecutive appearances
-                while (seqStart + strLength <= seqLength && sequence.substring(seqStart, seqStart + strLength).equals(STR)) {
-                    strCount++;
-                    seqStart += strLength;
+            int strCount = 0;
+            int start = i;
+            long rollingHash = seqHash;
+
+            // If it matches, then begin checking for consecutive appearances
+            while (start + strLength <= seqLength && rollingHash == strHash) {
+//                rollingHash = hash(sequence.substring(start, start + strLength), strLength);
+//                if (rollingHash == strHash) {
+//                    strCount++;
+//                    start += strLength;
+//                } else {
+//                    break;
+//                }
+
+                strCount++;
+                start += strLength;
+                if (start + strLength <= seqLength) {
+                    rollingHash = (rollingHash + 54321102419L - (baseValue * sequence.charAt(start)) % 54321102419L) % 54321102419L;
+                    rollingHash = (rollingHash * 255 + sequence.charAt(start + strLength)) % 54321102419L;
                 }
-
-                // Track maximum chain of repeated STRs
-                totalCount = Math.max(totalCount, strCount);
             }
+
+            // Track maximum chain of repeated STRs
+            totalCount = Math.max(totalCount, strCount);
 
             // Slide window by 1 character if there's enough sequence left
             if (i + strLength < seqLength) {
-                seqHash = hash(sequence.substring(i + 1, i + 1 + strLength), strLength);
+                seqHash = (seqHash + 54321102419L - (baseValue * sequence.charAt(i)) % 54321102419L) % 54321102419L;
+                seqHash = (seqHash * 255 + sequence.charAt(i + strLength)) % 54321102419L;
             }
         }
 
