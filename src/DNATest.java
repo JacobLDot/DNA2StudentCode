@@ -34,9 +34,7 @@ public class DNATest {
 
     @Test
     @Timeout(value = 30, unit = TimeUnit.MILLISECONDS)
-    public void testMore() {
-        setTestData(5);
-    }
+    public void testMore() { setTestData(5); }
 
     @Test
     @Timeout(value = 40, unit = TimeUnit.MILLISECONDS)
