@@ -11,6 +11,16 @@
  */
 
 public class DNA {
+    private final static int RADIX = 4;
+
+    // Horner's Method: used for computing a hash value from a string
+    public static long hash(String STR) {
+        long hash = 0;
+        for (int i = 0; i < STR.length(); i++) {
+            hash = (hash * RADIX + STR.charAt(i));
+        }
+        return hash;
+    }
 
     public static int STRCount(String sequence, String STR) {
 
@@ -19,56 +29,47 @@ public class DNA {
         int seqLength = sequence.length();
 
         // Initial hash values
-        long strHash = hash(STR, strLength);
-        long seqHash = hash(sequence.substring(0, strLength), strLength);
+        long strHash = 0;
+        long seqHash = 0;
+        long numValue = 1;
 
-        // Tracks number of repetitions in a chain of STRs
-        int strCount = 0;
-        int totalCount = 0;
+        for (int i = 0; i < strLength; i++) {
+            strHash = (strHash * RADIX + STR.charAt(i));
+            seqHash = (seqHash * RADIX + sequence.charAt(i));
+            if (i < strLength - 1) {
+                numValue = (numValue * RADIX);
+            }
+        }
+
+        int maxCount = 0;
 
         // Slides a window of length of STR through the entire DNA sequence
-        for (int i = strLength; i <= seqLength - strLength; i++) {
-
-            strCount = 0;
-
-            if (seqHash == strHash) {
-                int start = i - strLength;
-
-                while (start + strLength <= seqLength) {
-                    long tempHash = hash(sequence.substring(start, start + strLength), strLength);
-                    if (tempHash == strHash) {
-                        strCount++;
-                        start += strLength;
-                    } else {
-                        break;
-                    }
+        for (int i = 0; i <= seqLength - strLength; i++) {
+            int strCount = 0;
+            int position = i;
+            long currentHash = seqHash;
+            while (position + strLength <= seqLength && currentHash == strHash) {
+                strCount++;
+                position += strLength;
+                if (position + strLength - 1 > seqLength) break;
+                currentHash = 0;
+                for (int j = 0; j < strLength; j++) {
+                    currentHash = (currentHash * RADIX + sequence.charAt(position + j));
                 }
-
-                // Track maximum chain of repeated STRs
-                totalCount = Math.max(totalCount, strCount);
             }
 
-            // Slide window by 1 character if there's enough sequence left
-            if (i < seqLength) {
-                seqHash = hash(sequence.substring(1 + (i - strLength), i - strLength + 1 + strLength), strLength);
+            // Track maximum chain of repeated STRs
+            maxCount = Math.max(maxCount, strCount);
+
+            // Rolling hash
+            if (i + strLength < seqLength) {
+                seqHash = (seqHash - sequence.charAt(i) * numValue);
+                seqHash = (seqHash * RADIX) + sequence.charAt(i + strLength);
             }
         }
 
         // Returns maximum chain of repeated STRs
-        return totalCount;
-    }
-
-    // Method: hash
-    public static long hash(String STR, int strLength) {
-        // R: all ASCII values; H: # representing the STR; P: large prime number
-        int R = 255;
-        long h = 0;
-        long p = 54321102419L;
-
-        // Horner's Method: used for computing a hash value from a string
-        for (int i = 0; i < strLength; i++) {
-            h = (h * R + STR.charAt(i)) % p;
-        }
-        return h;
+        System.out.println(maxCount);
+        return maxCount;
     }
 }
