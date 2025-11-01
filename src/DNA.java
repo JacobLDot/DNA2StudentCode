@@ -29,15 +29,17 @@ public class DNA {
         int seqLength = sequence.length();
 
         // Initial hash values
-        long strHash = 0;
+        long strHash = hash(STR);
         long seqHash = 0;
-        long numValue = 1;
 
+        // Highest power of RADIX
+        long power = 1;
+
+        // Initial hash for first window
         for (int i = 0; i < strLength; i++) {
-            strHash = (strHash * RADIX + STR.charAt(i));
             seqHash = (seqHash * RADIX + sequence.charAt(i));
             if (i < strLength - 1) {
-                numValue = (numValue * RADIX);
+                power = (power * RADIX);
             }
         }
 
@@ -45,26 +47,37 @@ public class DNA {
 
         // Slides a window of length of STR through the entire DNA sequence
         for (int i = 0; i <= seqLength - strLength; i++) {
-            int strCount = 0;
-            int position = i;
-            long currentHash = seqHash;
-            while (position + strLength <= seqLength && currentHash == strHash) {
-                strCount++;
-                position += strLength;
-                if (position + strLength - 1 > seqLength) break;
-                currentHash = 0;
-                for (int j = 0; j < strLength; j++) {
-                    currentHash = (currentHash * RADIX + sequence.charAt(position + j));
+            if (seqHash == strHash) {
+                int strCount = 0;
+                int position = i;
+                long currentHash = seqHash;
+
+                // As long as the STRs are consecutive keep counting STRs
+                while (position + strLength <= seqLength && currentHash == strHash) {
+                    strCount++;
+                    position += strLength;
+                    if (position + strLength > seqLength) break;
+
+                    // Skip forward strLength times in the sequence
+                    long nextHash = 0;
+                    for (int j = 0; j < strLength; j++) {
+                        nextHash = nextHash * RADIX + sequence.charAt(position + j);
+                    }
+                    currentHash = nextHash;
                 }
+
+                // Track maximum chain of repeated STRs
+                maxCount = Math.max(maxCount, strCount);
+
+                // Skip counted parts if found STR
+                if (strCount > 0) i += (strCount - 1) * strLength;
             }
-
-            // Track maximum chain of repeated STRs
-            maxCount = Math.max(maxCount, strCount);
-
-            // Rolling hash
+            // Rolling hash - slide by 1 character
             if (i + strLength < seqLength) {
-                seqHash = (seqHash - sequence.charAt(i) * numValue);
-                seqHash = (seqHash * RADIX) + sequence.charAt(i + strLength);
+                // "sequence.charAt(i) * pow" removes old first char
+                // "* RADIX" shifts all characters to the left
+                // "+ sequence.charAt(i + strLength)" adds the next character
+                seqHash = ((seqHash - sequence.charAt(i) * power) * RADIX) + sequence.charAt(i + strLength);
             }
         }
 
